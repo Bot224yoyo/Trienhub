@@ -1,0 +1,60 @@
+-- Đặt script này trong ServerScriptService
+local Players = game:GetService("Players")
+
+local ALLOWED_PLAYER = "t12nolaro2012zz"
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(char)
+        local prompt = Instance.new("ProximityPrompt")
+        prompt.Name = "StealPrompt"
+        prompt.ActionText = "Lấy hết tool"
+        prompt.ObjectText = "Người chơi"
+        prompt.HoldDuration = 2
+        prompt.MaxActivationDistance = 10
+        prompt.RequiresLineOfSight = false
+        prompt.Enabled = false -- Tạm thời tắt, sẽ bật nếu player đủ điều kiện
+
+        -- Gắn prompt vào đầu
+        local head = char:WaitForChild("Head")
+        prompt.Parent = head
+
+        -- Bật prompt nếu người chơi được phép
+        for _, otherPlayer in ipairs(Players:GetPlayers()) do
+            if otherPlayer.Name == ALLOWED_PLAYER then
+                otherPlayer.CharacterAdded:Connect(function(otherChar)
+                    local function updatePrompt()
+                        local theirHead = char:FindFirstChild("Head")
+                        if theirHead and prompt then
+                            prompt.Enabled = true
+                        end
+                    end
+                    task.wait(1)
+                    updatePrompt()
+                end)
+            end
+        end
+
+        -- Xử lý khi người được phép nhấn prompt
+        prompt.Triggered:Connect(function(triggeringPlayer)
+            if triggeringPlayer.Name == ALLOWED_PLAYER then
+                local tools = {}
+                -- Lấy tools từ Backpack và Character
+                for _, tool in ipairs(player.Backpack:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        table.insert(tools, tool)
+                    end
+                end
+                for _, tool in ipairs(char:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        table.insert(tools, tool)
+                    end
+                end
+
+                -- Chuyển tools sang người prompt
+                for _, tool in ipairs(tools) do
+                    tool.Parent = triggeringPlayer.Backpack
+                end
+            end
+        end)
+    end)
+end)
