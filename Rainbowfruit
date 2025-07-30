@@ -1,0 +1,48 @@
+local Players = game:GetService("Players")
+
+-- Hàm tạo hiệu ứng cầu vồng cho Part
+local function applyRainbowEffect(part)
+	local colors = {
+		Color3.fromRGB(255, 0, 0),
+		Color3.fromRGB(255, 128, 0),
+		Color3.fromRGB(255, 255, 0),
+		Color3.fromRGB(0, 255, 0),
+		Color3.fromRGB(0, 255, 255),
+		Color3.fromRGB(0, 0, 255),
+		Color3.fromRGB(128, 0, 255)
+	}
+	
+	coroutine.wrap(function()
+		while part and part.Parent do
+			for _, color in ipairs(colors) do
+				part.Color = color
+				task.wait(0.15)
+			end
+		end
+	end)()
+end
+
+-- Khi player vào game
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function()
+		-- Tạo tool mới
+		local tool = Instance.new("Tool")
+		tool.Name = "RainbowCube"
+		tool.RequiresHandle = true
+
+		local handle = Instance.new("Part")
+		handle.Name = "Handle"
+		handle.Size = Vector3.new(2, 2, 2)
+		handle.Anchored = false
+		handle.CanCollide = false
+		handle.Material = Enum.Material.Neon
+		handle.Color = Color3.fromRGB(255, 0, 0)
+		handle.Parent = tool
+
+		-- Gắn hiệu ứng đổi màu
+		applyRainbowEffect(handle)
+
+		-- Đưa tool vào Backpack của người chơi
+		tool.Parent = player:WaitForChild("Backpack")
+	end)
+end)
